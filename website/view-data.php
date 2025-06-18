@@ -60,7 +60,9 @@
                 echo "</form>";
                 // Optioneel: Bewerk knop (implementeren we later)
                 // echo " <a href='edit_data.php?id=" . htmlspecialchars($row["id"]) . "' style='background-color: #007bff; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; text-decoration: none; margin-left: 5px;'>Bewerk</a>";
-                echo "</td>"; // EINDE Acties cel
+                echo "<a href='manage_entry.php?id=" . htmlspecialchars($row["id"]) . "' style='background-color: #007bff; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; text-decoration: none;'>Bewerk</a>";
+echo "</td>"; // EINDE Acties cel
+		echo "</td>"; // EINDE Acties cel
                 echo "</tr>";
 
                 // Voeg data toe aan de $temperatures array voor de grafiek
