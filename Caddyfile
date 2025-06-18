@@ -1,6 +1,12 @@
 :80 {
-    root * /srv 
-    php_fastcgi php:9000
+    root * /srv
+
+    # Eerst kijken of het een statisch bestand is
     file_server
+
+    # Dan kijken of het een PHP-bestand is en doorsturen
+    php_fastcgi php:9000
+
+    # Tot slot, probeer standaardbestanden te vinden
     try_files {path} {path}/index.php index.php
 }
