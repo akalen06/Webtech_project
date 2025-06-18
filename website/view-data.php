@@ -11,22 +11,56 @@
     <?php
     include 'db_connection.php'; // Includeer je database connectie bestand
 
+    // ----------------------------------------------------
+    // NIEUW: Logica om verwijderverzoek te verwerken (DELETE operatie)
+    // ----------------------------------------------------
+    if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_id'])) {
+        $id_to_delete = $_POST['delete_id'];
+        try {
+            // Gebruik prepared statements om SQL injecties te voorkomen
+            $stmt_delete = $conn->prepare("DELETE FROM temperatures WHERE id = :id");
+            $stmt_delete->bindParam(':id', $id_to_delete, PDO::PARAM_INT); // Bind de parameter als integer
+            $stmt_delete->execute();
+            echo "<p style='color: green;'>Record met ID " . htmlspecialchars($id_to_delete) . " succesvol verwijderd.</p>";
+            // Optioneel: herlaad de pagina om de wijziging direct te tonen (kan ook via JavaScript)
+            // header("Location: view-data.php"); // Herleidt de pagina, verbergt de echo
+            // exit();
+        } catch(PDOException $e) {
+            echo "<p style='color: red;'>Fout bij verwijderen record: " . htmlspecialchars($e->getMessage()) . "</p>";
+        }
+    }
+    // ----------------------------------------------------
+    // EINDE NIEUW: Logica om verwijderverzoek te verwerken
+    // ----------------------------------------------------
+
     $temperatures = []; // Array om data voor JavaScript in op te slaan
 
     try {
-        $stmt = $conn->prepare("SELECT id, sensor_name, temperature, reading_time FROM temperatures ORDER BY reading_time ASC"); // LET OP: ORDER BY ASC voor grafiek
+        // Pas de query aan om de data voor de grafiek in oplopende volgorde op te halen
+        $stmt = $conn->prepare("SELECT id, sensor_name, temperature, reading_time FROM temperatures ORDER BY reading_time ASC");
         $stmt->execute();
 
         // Controleer of er resultaten zijn
         if ($stmt->rowCount() > 0) {
             echo "<table>";
-            echo "<tr><th>ID</th><th>Sensor Naam</th><th>Temperatuur (°C)</th><th>Tijdstip</th></tr>";
+            echo "<tr><th>ID</th><th>Sensor Naam</th><th>Temperatuur (°C)</th><th>Tijdstip</th><th>Acties</th></tr>"; // NIEUW: Acties kolom
+            // Output data van elke rij
             while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 echo "<tr>";
-                echo "<td>" . $row["id"]. "</td>";
-                echo "<td>" . $row["sensor_name"]. "</td>";
-                echo "<td>" . $row["temperature"]. "</td>";
-                echo "<td>" . $row["reading_time"]. "</td>";
+                echo "<td>" . htmlspecialchars($row["id"]). "</td>"; // htmlspecialchars voor XSS-preventie
+                echo "<td>" . htmlspecialchars($row["sensor_name"]). "</td>";
+                echo "<td>" . htmlspecialchars($row["temperature"]). "</td>";
+                echo "<td>" . htmlspecialchars($row["reading_time"]). "</td>";
+                echo "<td>"; // NIEUW: Acties cel
+                // Formulier voor verwijderknop (gebruikt POST om ID te sturen)
+                echo "<form method='post' style='display:inline;'>";
+                echo "<input type='hidden' name='delete_id' value='" . htmlspecialchars($row["id"]) . "'>";
+                // Minimale inline styling voor de knop
+                echo "<button type='submit' style='background-color: #dc3545; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px;'>Verwijder</button>";
+                echo "</form>";
+                // Optioneel: Bewerk knop (implementeren we later)
+                // echo " <a href='edit_data.php?id=" . htmlspecialchars($row["id"]) . "' style='background-color: #007bff; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; text-decoration: none; margin-left: 5px;'>Bewerk</a>";
+                echo "</td>"; // EINDE Acties cel
                 echo "</tr>";
 
                 // Voeg data toe aan de $temperatures array voor de grafiek
@@ -42,7 +76,7 @@
         }
 
     } catch(PDOException $e) {
-        echo "Fout bij ophalen data: " . $e->getMessage();
+        echo "Fout bij ophalen data: " . htmlspecialchars($e->getMessage());
     }
 
     $conn = null; // Sluit de verbinding
