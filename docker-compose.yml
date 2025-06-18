@@ -14,7 +14,8 @@ services:
       - db
 
   php:
-    image: php:8.2-fpm
+    #image: php:8.2-fpm
+    build: ./php #verwijst naar map met dockerfile
     volumes:
       - ./website:/srv
 
