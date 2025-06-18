@@ -23,8 +23,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: wachtwoord123
       MYSQL_DATABASE: sensordata
-      MYSQL_USER: root
-      MYSQL_PASSWORD: webpass
     volumes:
       - db_data:/var/lib/mysql
 
